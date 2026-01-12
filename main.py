@@ -125,6 +125,23 @@ def main() -> None:
     print("Бот запущен...")
     application.run_polling()
 
+async def global_error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Глобальный обработчик ошибок для приложения"""
+    error = context.error
+    
+    # Логируем ошибку
+    error_context = {
+        'update': str(update) if update else None,
+        'user_data': str(context.user_data) if context.user_data else None,
+        'chat_data': str(context.chat_data) if context.chat_data else None
+    }
+    
+    ErrorHandler.log_error(error, error_context)
+    
+    # Отправляем сообщение пользователю
+    if update:
+        await ErrorHandler.send_error_to_user(update, str(error))
+
 if __name__ == '__main__':
     main()
 
