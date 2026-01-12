@@ -26,8 +26,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         parse_mode='Markdown'
     )
 
-load_dotenv()
-BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 # Константы для режимов
 MODE_TRANSCRIPTION = "Расшифровка"
@@ -178,6 +176,7 @@ if __name__ == '__main__':
 
 if __name__ == '__main__':
     main()
+
 
 
 
