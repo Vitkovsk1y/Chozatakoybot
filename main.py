@@ -13,8 +13,16 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text('Отправьте голосовое сообщение для распознавания.')
 
 async def audio_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if update.message.voice:
-        await update.message.reply_text("Распознаю...")
+    file_info = update.message.voice or update.message.audio
+    new_file = await context.bot.get_file(file_info.file_id)
+    
+    ext = "ogg" if update.message.voice else "mp3"
+    local_path = f"{file_info.file_id}.{ext}"
+    
+    await new_file.download_to_drive(local_path)
+    await update.message.reply_text("📥 Файл успешно скачан на сервер!")
+    return local_path
+
 
 def main() -> None:
     application = ApplicationBuilder().token(BOT_TOKEN).build()
@@ -26,6 +34,7 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
+
 
 
 
