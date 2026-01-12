@@ -15,9 +15,7 @@ load_dotenv()
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 r = sr.Recognizer()
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text('Отправьте голосовое сообщение для распознавания.')
+   
 
 async def audio_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message.voice:
@@ -33,6 +31,7 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
+
 
 
 
