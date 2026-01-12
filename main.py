@@ -6,119 +6,35 @@ from telegram import ReplyKeyboardMarkup
 import os
 from dotenv import load_dotenv
 
+async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Сохраняем выбранный режим в context.user_data"""
+    selected_mode = update.message.text
+    context.user_data['mode'] = selected_mode
+    await update.message.reply_text(f'✅ Режим изменен на: **{selected_mode}**', parse_mode='Markdown')
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    keyboard = [['Помощь'], ['О проекте']]
+    # Устанавливаем режим по умолчанию, если его нет
+    if 'mode' not in context.user_data:
+        context.user_data['mode'] = MODE_TRANSCRIPTION
+
+    keyboard = [
+        [MODE_TRANSCRIPTION, MODE_SUMMARY],
+        ['Помощь', 'О проекте']
+    ]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-    await update.message.reply_text('Привет! Я бот Спринта №2. Пришли аудио.', reply_markup=reply_markup)
-
-# Настройка централизованного логирования
-def setup_logging():
-    """Настройка системы логирования с ротацией файлов"""
-    # Создаем логгер
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
     
-    # Форматтер для логов
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
+    current_mode = context.user_data['mode']
+    await update.message.reply_text(
+        f'Привет! Текущий режим: **{current_mode}**.\n'
+        'Пришли мне голосовое сообщение или смени режим кнопкой ниже.',
+        reply_markup=reply_markup,
+        parse_mode='Markdown'
     )
-    
-    # Файловый обработчик с ротацией (макс 5 файлов по 10 МБ каждый)
-    file_handler = RotatingFileHandler(
-        'bot.log',
-        maxBytes=10*1024*1024,  # 10 МБ
-        backupCount=5,
-        encoding='utf-8'
-    )
-    file_handler.setFormatter(formatter)
-    file_handler.setLevel(logging.INFO)
-    
-    # Консольный обработчик
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(formatter)
-    console_handler.setLevel(logging.INFO)
-    
-    # Добавляем обработчики
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
-    
-    return logger
 
-# Инициализация логгера
-logger = setup_logging()
 
-class ErrorHandler:
-    """Класс для централизованной обработки ошибок"""
-    
-    @staticmethod
-    def log_error(error: Exception, context: Optional[dict] = None) -> None:
-        """
-        Логирование ошибок с контекстом
-        
-        Args:
-            error: Исключение
-            context: Дополнительный контекст ошибки
-        """
-        error_data = {
-            'timestamp': datetime.now().isoformat(),
-            'error_type': type(error).__name__,
-            'error_message': str(error),
-            'traceback': traceback.format_exc()
-        }
-        
-        if context:
-            error_data['context'] = context
-        
-        # Логируем в файл
-        logger.error(json.dumps(error_data, ensure_ascii=False))
-        
-        # Также логируем в консоль для отладки
-        logger.error(f"Error: {error}")
-        logger.error(f"Traceback: {traceback.format_exc()}")
-    
-    @staticmethod
-    async def send_error_to_user(update: Update, error_message: str) -> None:
-        """Отправка пользователю сообщения об ошибке"""
-        try:
-            user_friendly_message = (
-                "❌ Произошла ошибка при обработке вашего запроса. "
-                "Попробуйте еще раз или обратитесь в поддержку."
-            )
-            await update.message.reply_text(user_friendly_message)
-        except Exception as e:
-            logger.error(f"Failed to send error message to user: {e}")
-
-# Декоратор для обработки ошибок в асинхронных функциях
-def error_handler_async(func):
-    """Декоратор для автоматической обработки ошибок в асинхронных функциях"""
-    async def wrapper(*args, **kwargs):
-        try:
-            return await func(*args, **kwargs)
-        except Exception as e:
-            # Извлекаем update из аргументов
-            update = None
-            for arg in args:
-                if isinstance(arg, Update):
-                    update = arg
-                    break
-            
-            context_data = {
-                'function': func.__name__,
-                'args': str(args),
-                'kwargs': str(kwargs)
-            }
-            
-            ErrorHandler.log_error(e, context_data)
-            
-            if update:
-                await ErrorHandler.send_error_to_user(update, str(e))
-            
-            return None
-    return wrapper
-
-load_dotenv()
-BOT_TOKEN = os.getenv('BOT_TOKEN')
+# Константы для режимов
+MODE_TRANSCRIPTION = "Расшифровка"
+MODE_SUMMARY = "Пересказ"
 
 r = sr.Recognizer()
    
@@ -175,6 +91,11 @@ async def help_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     )
 
 async def audio_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    mode = context.user_data.get('mode', MODE_TRANSCRIPTION)
+    if mode == MODE_TRANSCRIPTION:
+        await update.message.reply_text("Выбрана расшифровка...")
+    else:
+        await update.message.reply_text("Выбран пересказ...")
     file_info = update.message.voice or update.message.audio
     new_file = await context.bot.get_file(file_info.file_id)
     
@@ -188,8 +109,18 @@ async def audio_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
 def main() -> None:
     application = ApplicationBuilder().token(BOT_TOKEN).build()
+    
+    # Регистрация команд
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(MessageHandler(filters.VOICE, audio_handler))
+    
+    # Регистрация переключателя режимов (фильтруем текст по названиям кнопок)
+    application.add_handler(MessageHandler(
+        filters.Text([MODE_TRANSCRIPTION, MODE_SUMMARY]), set_mode
+    ))
+    
+    # Регистрация обработки аудио и текста "Помощь"
+    application.add_handler(MessageHandler(filters.Text(['Помощь']), help_button))
+    application.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, audio_handler))
 
     print("Бот запущен...")
     application.run_polling()
@@ -213,6 +144,8 @@ async def global_error_handler(update: Update, context: ContextTypes.DEFAULT_TYP
 
 if __name__ == '__main__':
     main()
+
+
 
 
 
