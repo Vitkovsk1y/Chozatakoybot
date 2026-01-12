@@ -9,9 +9,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
     await update.message.reply_text('Привет! Я бот Спринта №2. Пришли аудио.', reply_markup=reply_markup)
 
-# Загружаем токен из файла
-with open('token.txt', 'r') as f:
-    BOT_TOKEN = f.read().strip()
+load_dotenv()
+BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 r = sr.Recognizer()
 
