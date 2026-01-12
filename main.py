@@ -3,6 +3,8 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 import speech_recognition as sr
 from telegram import ReplyKeyboardMarkup
+import os
+from dotenv import load_dotenv
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     keyboard = [['Помощь'], ['О проекте']]
