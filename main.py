@@ -2,16 +2,20 @@ import telegram
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 import speech_recognition as sr
+from telegram import ReplyKeyboardMarkup
 import os
 from dotenv import load_dotenv
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    keyboard = [['Помощь'], ['О проекте']]
+    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    await update.message.reply_text('Привет! Я бот Спринта №2. Пришли аудио.', reply_markup=reply_markup)
 
 load_dotenv()
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 r = sr.Recognizer()
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text('Отправьте голосовое сообщение для распознавания.')
+   
 
 async def audio_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message.voice:
