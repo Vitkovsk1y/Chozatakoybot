@@ -5,9 +5,6 @@ import speech_recognition as sr
 import os
 from dotenv import load_dotenv
 
-with open('token.txt', 'r') as f:
-    BOT_TOKEN = f.read().strip()
-
 load_dotenv()
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 
@@ -30,6 +27,7 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
+
 
 
 
