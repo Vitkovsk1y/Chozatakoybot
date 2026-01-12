@@ -2,6 +2,12 @@ import telegram
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 import speech_recognition as sr
+import os
+
+def cleanup(file_path):
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        print(f"Файл {file_path} удален.")
 
 # Загружаем токен из файла
 with open('token.txt', 'r') as f:
@@ -26,6 +32,7 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
+
 
 
 
