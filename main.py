@@ -2,6 +2,12 @@ import telegram
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 import speech_recognition as sr
+from telegram import ReplyKeyboardMarkup
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    keyboard = [['Помощь'], ['О проекте']]
+    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    await update.message.reply_text('Привет! Я бот Спринта №2. Пришли аудио.', reply_markup=reply_markup)
 
 # Загружаем токен из файла
 with open('token.txt', 'r') as f:
@@ -26,6 +32,7 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
+
 
 
 
