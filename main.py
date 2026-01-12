@@ -2,10 +2,11 @@ import telegram
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 import speech_recognition as sr
+import os
+from dotenv import load_dotenv
 
-# Загружаем токен из файла
-with open('token.txt', 'r') as f:
-    BOT_TOKEN = f.read().strip()
+load_dotenv()
+BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 r = sr.Recognizer()
 
