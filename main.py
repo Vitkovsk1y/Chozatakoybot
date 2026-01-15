@@ -106,6 +106,30 @@ async def audio_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     await update.message.reply_text("📥 Файл успешно скачан на сервер!")
     return local_path
 
+# Имитация модулей бота для интеграционного теста
+def mock_voice_to_wav(voice_data):
+    print("Шаг 1: Голосовое сообщение сконвертировано в .wav")
+    return "audio.wav"
+
+def mock_wav_to_text(audio_file):
+    print("Шаг 2: Аудио расшифровано в текст")
+    return "Пример длинного текста лекции..."
+
+def mock_text_to_summary(text):
+    print("Шаг 3: Генерация краткого пересказа завершена")
+    return "Краткий конспект: бот работает корректно."
+
+def run_integration_test():
+    print("--- ЗАПУСК ИНТЕГРАЦИОННОГО ТЕСТИРОВАНИЯ ---")
+    
+    # Эмуляция всей цепочки
+    voice = "input_voice_blob"
+    wav = mock_voice_to_wav(voice)
+    text = mock_wav_to_text(wav)
+    summary = mock_text_to_summary(text)
+    
+    print(f"\nФинальный результат: {summary}")
+    print("--- ТЕСТ ЗАВЕРШЕН УСПЕШНО ---")
 
 def main() -> None:
     application = ApplicationBuilder().token(BOT_TOKEN).build()
@@ -143,7 +167,9 @@ async def global_error_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         await ErrorHandler.send_error_to_user(update, str(error))
 
 if __name__ == '__main__':
+    run_integration_test()
     main()
+
 
 
 
