@@ -22,6 +22,11 @@ async def audio_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     if update.message.voice:
         await update.message.reply_text("Распознаю...")
 
+def cleanup(file_path):
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        print(f"Файл {file_path} удален.")
+
 def main() -> None:
     application = ApplicationBuilder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("start", start))
@@ -32,6 +37,7 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
+
 
 
 
