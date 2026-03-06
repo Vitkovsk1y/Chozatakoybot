@@ -106,6 +106,35 @@ async def audio_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     await update.message.reply_text("📥 Файл успешно скачан на сервер!")
     return local_path
 
+# Тест: Проверка сохранения файла на диск
+def test_file_saving(filename, content):
+    try:
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(content)
+        if os.path.exists(filename):
+            print(f"Успех: Файл {filename} корректно сохранен.")
+            return True
+    except Exception as e:
+        print(f"Ошибка при сохранении файла: {e}")
+        return False
+        
+# Функция очистки
+def cleanup(file_path):
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        print(f"Файл {file_path} удален.")
+
+# Проверка корректности работы с длинными именами файлов
+if __name__ == "__main__":
+    # Создаем длинное имя файла
+    long_filename = "test_voice_message_" + "a" * 100 + ".txt"
+    test_content = "Тестовое содержимое для расшифровки"
+
+    # Запускаем проверку
+    if test_file_saving(long_filename, test_content):
+        # Если сохранилось — удаляем, чтобы не оставлять мусор
+        cleanup(long_filename)
+        print("Проверка длинных имен файлов пройдена успешно!")
 
 def main() -> None:
     application = ApplicationBuilder().token(BOT_TOKEN).build()
@@ -144,6 +173,8 @@ async def global_error_handler(update: Update, context: ContextTypes.DEFAULT_TYP
 
 if __name__ == '__main__':
     main()
+
+
 
 
 
